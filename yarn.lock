@@ -734,7 +734,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@pcd/eddsa-pcd@0.3.0":
+"@pcd/eddsa-pcd@0.3.0", "@pcd/eddsa-pcd@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@pcd/eddsa-pcd/-/eddsa-pcd-0.3.0.tgz#c9a469ee91132aa11940e76dac57d5706615f39a"
   integrity sha512-tOCpQjOE0oXQXyLIIu+xKvjrhDnGa9nOndOSofqYp74kP8XXMEl5nIlNAebX8rs8p0cGNZTconxwpMuWq2yy7w==

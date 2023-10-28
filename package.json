@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@pcd/eddsa-pcd": "^0.3.0",
     "@pcd/eddsa-ticket-pcd": "^0.3.0",
     "@pcd/eslint-config-custom": "^0.8.0",
     "@pcd/passport-interface": "0.6.0",

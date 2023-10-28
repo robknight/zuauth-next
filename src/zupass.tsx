@@ -103,6 +103,22 @@ export async function authenticate(serialized: string): Promise<boolean> {
 
 type PartialTicketData = Partial<ITicketData>;
 
+async function login() {
+  const nonce = await (
+    await fetch("/api/auth/nonce", { credentials: "include" })
+  ).text();
+  openZKEdDSAEventTicketPopup(
+    {
+      revealAttendeeEmail: true,
+      revealEventId: true,
+      revealProductId: true
+    },
+    BigInt(nonce),
+    supportedEvents,
+    []
+  );
+}
+
 export function useZupass(): {
   login: () => Promise<void>;
   ticketData: PartialTicketData | undefined;
@@ -132,20 +148,6 @@ export function useZupass(): {
       }
     })();
   }, [pcdStr]);
-
-  async function login() {
-    const nonce = await (
-      await fetch("/api/auth/nonce", { credentials: "include" })
-    ).text();
-    openZKEdDSAEventTicketPopup(
-      {
-        revealAttendeeEmail: true
-      },
-      BigInt(nonce),
-      supportedEvents,
-      []
-    );
-  }
 
   return { login, ticketData };
 }
