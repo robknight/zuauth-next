@@ -1,8 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { ZKEdDSAEventTicketPCDPackage } from "@pcd/zk-eddsa-event-ticket-pcd";
+import { supportedEvents } from "@/zupass-config";
 
 const nullifiers = new Set<string>();
+
+
 
 export default withIronSessionApiRoute(async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -59,6 +62,11 @@ export default withIronSessionApiRoute(async function handler(req: NextApiReques
       return;
     }*/
 
+    const { eventId } = pcd.claim.partialTicket;
+    if (!eventId || !supportedEvents.includes(eventId)) {
+      console.error(`[ERROR] PCD ticket has an unsupported event ID: ${eventId}`);
+      res.status(400).send("PCD ticket is not for a supported event");
+    }
     // The PCD's nullifier is saved so that it prevents the
     // same PCD from being reused for another login.
     nullifiers.add(pcd.claim.nullifierHash);
@@ -72,7 +80,8 @@ export default withIronSessionApiRoute(async function handler(req: NextApiReques
 
     res.status(200).send({
       ticketId: pcd.claim.partialTicket.ticketId,
-      attendeeSemaphoreId: pcd.claim.partialTicket.attendeeSemaphoreId
+      attendeeSemaphoreId: pcd.claim.partialTicket.attendeeSemaphoreId,
+      eventId: pcd.claim.partialTicket.eventId
     });
   } catch (error: any) {
     console.error(`[ERROR] ${error.message}`);

@@ -4,6 +4,7 @@ import { EdDSATicketFieldsToReveal, ZKEdDSAEventTicketPCDArgs, ZKEdDSAEventTicke
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { EdDSATicketPCDPackage, ITicketData } from "@pcd/eddsa-ticket-pcd";
 import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
+import { supportedEvents } from "./zupass-config";
 
 const ZUPASS_URL = "https://zupass.org";
 
@@ -128,7 +129,7 @@ export function useZupass(): { login: () => Promise<void>, ticketData: PartialTi
 
   async function login() {
     const nonce = await (await fetch("/api/auth/nonce", { credentials: "include" })).text();
-    openZKEdDSAEventTicketPopup({ revealTicketId: true, revealAttendeeSemaphoreId: true }, BigInt(nonce), [], []);
+    openZKEdDSAEventTicketPopup({ revealTicketId: true, revealAttendeeSemaphoreId: true, revealEventId: true }, BigInt(nonce), supportedEvents, []);
   } 
 
   return { login, ticketData };
