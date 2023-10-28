@@ -19,7 +19,7 @@ const ZUPASS_URL = "https://zupass.org";
 /**
  * Opens a Zupass popup to make a proof of a ZK EdDSA event ticket PCD.
  */
-export function openZKEdDSAEventTicketPopup(
+function openZKEdDSAEventTicketPopup(
   fieldsToReveal: EdDSATicketFieldsToReveal,
   watermark: bigint,
   validEventIds: string[],
@@ -76,29 +76,6 @@ export function openZKEdDSAEventTicketPopup(
   });
 
   openPassportPopup(popupUrl, proofUrl);
-}
-
-/**
- * Performs server-side validation (PCD + challenge) for an EdDSA ticket PCD by sending a POST
- * request to the `consumer-server`, and updates the current session's state variable.
- *
- * @param serialized The stringified serialized form of an EdDSATicketPCD.
- */
-export async function authenticate(serialized: string): Promise<boolean> {
-  const { pcd, type } = JSON.parse(serialized);
-
-  const response = await fetch("/auth/authenticate", {
-    method: "POST",
-    mode: "cors",
-    credentials: "include",
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ pcd, type })
-  });
-
-  return response.status === 200;
 }
 
 type PartialTicketData = Partial<ITicketData>;

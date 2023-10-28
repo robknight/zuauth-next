@@ -4,7 +4,6 @@ import { ZKEdDSAEventTicketPCDPackage } from "@pcd/zk-eddsa-event-ticket-pcd";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
-//
 const nullifiers = new Set<string>();
 
 // https://api.zupass.org/issue/eddsa-public-key
