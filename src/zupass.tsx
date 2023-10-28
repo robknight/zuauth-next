@@ -1,9 +1,17 @@
-import { useEffect, useState } from "react";
-import { usePassportPopupMessages, openPassportPopup, constructPassportPcdGetRequestUrl } from "@pcd/passport-interface";
-import { EdDSATicketFieldsToReveal, ZKEdDSAEventTicketPCDArgs, ZKEdDSAEventTicketPCDPackage } from "@pcd/zk-eddsa-event-ticket-pcd";
-import { ArgumentTypeName } from "@pcd/pcd-types";
 import { EdDSATicketPCDPackage, ITicketData } from "@pcd/eddsa-ticket-pcd";
+import {
+  constructPassportPcdGetRequestUrl,
+  openPassportPopup,
+  usePassportPopupMessages
+} from "@pcd/passport-interface";
+import { ArgumentTypeName } from "@pcd/pcd-types";
 import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
+import {
+  EdDSATicketFieldsToReveal,
+  ZKEdDSAEventTicketPCDArgs,
+  ZKEdDSAEventTicketPCDPackage
+} from "@pcd/zk-eddsa-event-ticket-pcd";
+import { useEffect, useState } from "react";
 import { supportedEvents } from "./zupass-config";
 
 const ZUPASS_URL = "https://zupass.org";
@@ -79,59 +87,67 @@ export function openZKEdDSAEventTicketPopup(
 export async function authenticate(serialized: string): Promise<boolean> {
   const { pcd, type } = JSON.parse(serialized);
 
-  const response = await fetch(
-    "/auth/authenticate",
-    {
-      method: "POST",
-      mode: "cors",
-      credentials: "include",
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ pcd, type })
-    }
-  );
+  const response = await fetch("/auth/authenticate", {
+    method: "POST",
+    mode: "cors",
+    credentials: "include",
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ pcd, type })
+  });
 
-  return response.status === 200
+  return response.status === 200;
 }
 
 type PartialTicketData = Partial<ITicketData>;
 
-export function useZupass(): { login: () => Promise<void>, ticketData: PartialTicketData | undefined } {
+export function useZupass(): {
+  login: () => Promise<void>;
+  ticketData: PartialTicketData | undefined;
+} {
   const [pcdStr] = usePassportPopupMessages();
-  const [ticketData, setTicketData] = useState<PartialTicketData | undefined>(undefined);
+  const [ticketData, setTicketData] = useState<PartialTicketData | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     (async () => {
       if (pcdStr) {
-        const response = await fetch(
-          "/api/auth/authenticate",
-          {
-            method: "POST",
-            mode: "cors",
-            credentials: "include",
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "Content-Type": "application/json"
-            },
-            body: pcdStr
-          }
-        );
+        const response = await fetch("/api/auth/authenticate", {
+          method: "POST",
+          mode: "cors",
+          credentials: "include",
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/json"
+          },
+          body: pcdStr
+        });
 
         if (response.status === 200) {
           setTicketData(await response.json());
         }
       }
     })();
-
   }, [pcdStr]);
 
   async function login() {
-    const nonce = await (await fetch("/api/auth/nonce", { credentials: "include" })).text();
-    openZKEdDSAEventTicketPopup({ revealTicketId: true, revealAttendeeSemaphoreId: true, revealEventId: true }, BigInt(nonce), supportedEvents, []);
-  } 
+    const nonce = await (
+      await fetch("/api/auth/nonce", { credentials: "include" })
+    ).text();
+    openZKEdDSAEventTicketPopup(
+      {
+        revealTicketId: true,
+        revealAttendeeSemaphoreId: true,
+        revealEventId: true
+      },
+      BigInt(nonce),
+      supportedEvents,
+      []
+    );
+  }
 
   return { login, ticketData };
-
 }

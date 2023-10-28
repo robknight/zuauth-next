@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { withIronSessionApiRoute } from "iron-session/next";
 import { getRandomValues, hexToBigInt, toHexString } from "@pcd/util";
+import { withIronSessionApiRoute } from "iron-session/next";
+import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(
   async function nonceRoute(req: NextApiRequest, res: NextApiResponse) {
@@ -21,6 +21,7 @@ export default withIronSessionApiRoute(
     cookieName: process.env.SESSION_COOKIE_NAME as string,
     password: process.env.SESSION_PASSWORD as string,
     cookieOptions: {
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production"
     }
-  });
+  }
+);

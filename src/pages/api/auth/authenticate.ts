@@ -1,51 +1,50 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { withIronSessionApiRoute } from "iron-session/next";
-import { ZKEdDSAEventTicketPCDPackage } from "@pcd/zk-eddsa-event-ticket-pcd";
 import { supportedEvents } from "@/zupass-config";
+import { ZKEdDSAEventTicketPCDPackage } from "@pcd/zk-eddsa-event-ticket-pcd";
+import { withIronSessionApiRoute } from "iron-session/next";
+import { NextApiRequest, NextApiResponse } from "next";
 
 const nullifiers = new Set<string>();
 
+export default withIronSessionApiRoute(
+  async function handler(req: NextApiRequest, res: NextApiResponse) {
+    try {
+      if (!req.body.pcd) {
+        console.error(`[ERROR] No PCD specified`);
 
+        res.status(400).send("No PCD specified");
+        return;
+      }
 
-export default withIronSessionApiRoute(async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    if (!req.body.pcd) {
-      console.error(`[ERROR] No PCD specified`);
+      const pcd = await ZKEdDSAEventTicketPCDPackage.deserialize(req.body.pcd);
 
-      res.status(400).send("No PCD specified");
-      return;
-    }
+      if (!(await ZKEdDSAEventTicketPCDPackage.verify(pcd))) {
+        console.error(`[ERROR] ZK ticket PCD is not valid`);
 
-    const pcd = await ZKEdDSAEventTicketPCDPackage.deserialize(req.body.pcd);
+        res.status(401).send("ZK ticket PCD is not valid");
+        return;
+      }
 
-    if (!(await ZKEdDSAEventTicketPCDPackage.verify(pcd))) {
-      console.error(`[ERROR] ZK ticket PCD is not valid`);
+      if (pcd.claim.watermark.toString() !== req.session.nonce) {
+        console.error(`[ERROR] PCD watermark doesn't match`);
 
-      res.status(401).send("ZK ticket PCD is not valid");
-      return;
-    }
+        res.status(401).send("PCD watermark doesn't match");
+        return;
+      }
 
-    if (pcd.claim.watermark.toString() !== req.session.nonce) {
-      console.error(`[ERROR] PCD watermark doesn't match`);
+      if (!pcd.claim.nullifierHash) {
+        console.error(`[ERROR] PCD ticket nullifier has not been defined`);
 
-      res.status(401).send("PCD watermark doesn't match");
-      return;
-    }
+        res.status(401).send("PCD ticket nullifer has not been defined");
+        return;
+      }
 
-    if (!pcd.claim.nullifierHash) {
-      console.error(`[ERROR] PCD ticket nullifier has not been defined`);
+      if (nullifiers.has(pcd.claim.nullifierHash)) {
+        console.error(`[ERROR] PCD ticket has already been used`);
 
-      res.status(401).send("PCD ticket nullifer has not been defined");
-      return;
-    }
-
-    if (nullifiers.has(pcd.claim.nullifierHash)) {
-      console.error(`[ERROR] PCD ticket has already been used`);
-
-      res.status(401).send("PCD ticket has already been used");
-      return;
-    }
-/*
+        res.status(401).send("PCD ticket has already been used");
+        return;
+      }
+      /*
     const isValidTicket = value.knownTicketTypes.some((ticketType: any) => {
       return (
         ticketType.eventId === pcd.claim.partialTicket.eventId &&
@@ -62,37 +61,40 @@ export default withIronSessionApiRoute(async function handler(req: NextApiReques
       return;
     }*/
 
-    const { eventId } = pcd.claim.partialTicket;
-    if (!eventId || !supportedEvents.includes(eventId)) {
-      console.error(`[ERROR] PCD ticket has an unsupported event ID: ${eventId}`);
-      res.status(400).send("PCD ticket is not for a supported event");
+      const { eventId } = pcd.claim.partialTicket;
+      if (!eventId || !supportedEvents.includes(eventId)) {
+        console.error(
+          `[ERROR] PCD ticket has an unsupported event ID: ${eventId}`
+        );
+        res.status(400).send("PCD ticket is not for a supported event");
+      }
+      // The PCD's nullifier is saved so that it prevents the
+      // same PCD from being reused for another login.
+      nullifiers.add(pcd.claim.nullifierHash);
+
+      // The user value is anonymous as the nullifier
+      // is the hash of the user's Semaphore identity and the
+      // external nullifier (i.e. nonce).
+      req.session.user = pcd.claim.nullifierHash;
+
+      await req.session.save();
+
+      res.status(200).send({
+        ticketId: pcd.claim.partialTicket.ticketId,
+        attendeeSemaphoreId: pcd.claim.partialTicket.attendeeSemaphoreId,
+        eventId: pcd.claim.partialTicket.eventId
+      });
+    } catch (error: any) {
+      console.error(`[ERROR] ${error.message}`);
+
+      res.status(500).send(`Unknown error: ${error.message}`);
     }
-    // The PCD's nullifier is saved so that it prevents the
-    // same PCD from being reused for another login.
-    nullifiers.add(pcd.claim.nullifierHash);
-
-    // The user value is anonymous as the nullifier
-    // is the hash of the user's Semaphore identity and the
-    // external nullifier (i.e. nonce).
-    req.session.user = pcd.claim.nullifierHash;
-
-    await req.session.save();
-
-    res.status(200).send({
-      ticketId: pcd.claim.partialTicket.ticketId,
-      attendeeSemaphoreId: pcd.claim.partialTicket.attendeeSemaphoreId,
-      eventId: pcd.claim.partialTicket.eventId
-    });
-  } catch (error: any) {
-    console.error(`[ERROR] ${error.message}`);
-
-    res.status(500).send(`Unknown error: ${error.message}`);
+  },
+  {
+    cookieName: process.env.SESSION_COOKIE_NAME as string,
+    password: process.env.SESSION_PASSWORD as string,
+    cookieOptions: {
+      secure: process.env.NODE_ENV === "production"
+    }
   }
-},
-{
-  cookieName: process.env.SESSION_COOKIE_NAME as string,
-  password: process.env.SESSION_PASSWORD as string,
-  cookieOptions: {
-    secure: process.env.NODE_ENV === "production"
-  }
-});
+);
