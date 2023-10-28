@@ -966,10 +966,10 @@
     typescript "^4.5.2"
     uuid "^9.0.0"
 
-"@pcd/zk-eddsa-event-ticket-pcd@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@pcd/zk-eddsa-event-ticket-pcd/-/zk-eddsa-event-ticket-pcd-0.2.0.tgz#dedcea2566754310eb2eca0590677ed8b6d36a25"
-  integrity sha512-GyANWO60uZ/hIG9qXoMtjNdfAHNP2dVxqXoc682ZnIMyr4QO2g4J+dEPTkOBc6HXT8sQLItOFBPqT+WZyRj22A==
+"@pcd/zk-eddsa-event-ticket-pcd@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@pcd/zk-eddsa-event-ticket-pcd/-/zk-eddsa-event-ticket-pcd-0.2.1.tgz#5aeb01a254a4fb7a548ace385545d146edd44e61"
+  integrity sha512-TWTcWqSvGEe2Hs0QqLIDaa0SM9/12Hky3J5NIxG68ofR+/nIC4pMABzpI665VJbLCeXiYnPRnIRQezoGSFZ/fA==
   dependencies:
     "@pcd/eddsa-pcd" "0.3.0"
     "@pcd/eddsa-ticket-pcd" "0.3.0"

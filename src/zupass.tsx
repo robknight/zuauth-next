@@ -139,9 +139,7 @@ export function useZupass(): {
     ).text();
     openZKEdDSAEventTicketPopup(
       {
-        revealTicketId: true,
-        revealAttendeeSemaphoreId: true,
-        revealEventId: true
+        revealAttendeeEmail: true
       },
       BigInt(nonce),
       supportedEvents,

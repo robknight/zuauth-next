@@ -44,29 +44,28 @@ export default withIronSessionApiRoute(
         res.status(401).send("PCD ticket has already been used");
         return;
       }
-      /*
-    const isValidTicket = value.knownTicketTypes.some((ticketType: any) => {
-      return (
-        ticketType.eventId === pcd.claim.partialTicket.eventId &&
-        ticketType.productId === pcd.claim.partialTicket.productId &&
-        ticketType.publicKey[0] === pcd.claim.signer[0] &&
-        ticketType.publicKey[1] === pcd.claim.signer[1]
-      );
-    });
 
-    if (!isValidTicket) {
-      console.error(`[ERROR] PCD ticket doesn't exist on Zupass`);
-
-      res.status(401);
-      return;
-    }*/
-
-      const { eventId } = pcd.claim.partialTicket;
-      if (!eventId || !supportedEvents.includes(eventId)) {
-        console.error(
-          `[ERROR] PCD ticket has an unsupported event ID: ${eventId}`
-        );
-        res.status(400).send("PCD ticket is not for a supported event");
+      if (pcd.claim.partialTicket.eventId) {
+        const eventId = pcd.claim.partialTicket.eventId;
+        if (!supportedEvents.includes(eventId)) {
+          console.error(
+            `[ERROR] PCD ticket has an unsupported event ID: ${eventId}`
+          );
+          res.status(400).send("PCD ticket is not for a supported event");
+          return;
+        }
+      } else {
+        for (const eventId of pcd.claim.validEventIds ?? []) {
+          if (!supportedEvents.includes(eventId)) {
+            console.error(
+              `[ERROR] PCD ticket might have an unsupported event ID: ${eventId}`
+            );
+            res
+              .status(400)
+              .send("PCD ticket is not restricted to supported events");
+            return;
+          }
+        }
       }
       // The PCD's nullifier is saved so that it prevents the
       // same PCD from being reused for another login.
@@ -80,9 +79,7 @@ export default withIronSessionApiRoute(
       await req.session.save();
 
       res.status(200).send({
-        ticketId: pcd.claim.partialTicket.ticketId,
-        attendeeSemaphoreId: pcd.claim.partialTicket.attendeeSemaphoreId,
-        eventId: pcd.claim.partialTicket.eventId
+        attendeeEmail: pcd.claim.partialTicket.attendeeEmail
       });
     } catch (error: any) {
       console.error(`[ERROR] ${error.message}`);
