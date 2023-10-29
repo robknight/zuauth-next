@@ -2,6 +2,13 @@ import { getRandomValues, hexToBigInt, toHexString } from "@pcd/util";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 
+declare module "iron-session" {
+  interface IronSessionData {
+    nonce?: string;
+    user?: string;
+  }
+}
+
 export default withIronSessionApiRoute(
   async function nonceRoute(req: NextApiRequest, res: NextApiResponse) {
     try {

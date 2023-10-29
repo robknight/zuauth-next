@@ -1,9 +1,8 @@
 "use client";
-import { usePassportPopupSetup } from "@pcd/passport-interface";
-import React from "react";
+import { useZupassPopupSetup } from "../../PassportPopup";
 
 /**  This popup sends requests and receives PCDs from the passport. */
 export default function PassportPopupRedirect() {
-  const error = usePassportPopupSetup();
+  const error = useZupassPopupSetup();
   return <div>{error}</div>;
 }

@@ -1,9 +1,4 @@
 import { EdDSATicketPCDPackage, ITicketData } from "@pcd/eddsa-ticket-pcd";
-import {
-  constructPassportPcdGetRequestUrl,
-  openPassportPopup,
-  usePassportPopupMessages
-} from "@pcd/passport-interface";
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import {
@@ -12,7 +7,9 @@ import {
   ZKEdDSAEventTicketPCDPackage
 } from "@pcd/zk-eddsa-event-ticket-pcd";
 import { useEffect, useState } from "react";
+import { openZupassPopup, useZupassPopupMessages } from "./PassportPopup";
 import { supportedEvents } from "./zupass-config";
+import { constructZupassPcdGetRequestUrl } from "./PassportInterface";
 
 const ZUPASS_URL = "https://zupass.org";
 
@@ -67,7 +64,7 @@ function openZKEdDSAEventTicketPopup(
 
   const popupUrl = window.location.origin + "/popup";
 
-  const proofUrl = constructPassportPcdGetRequestUrl<
+  const proofUrl = constructZupassPcdGetRequestUrl<
     typeof ZKEdDSAEventTicketPCDPackage
   >(ZUPASS_URL, popupUrl, ZKEdDSAEventTicketPCDPackage.name, args, {
     genericProveScreen: true,
@@ -75,7 +72,7 @@ function openZKEdDSAEventTicketPopup(
     description: "ZKEdDSA Ticket PCD Request"
   });
 
-  openPassportPopup(popupUrl, proofUrl);
+  openZupassPopup(popupUrl, proofUrl);
 }
 
 type PartialTicketData = Partial<ITicketData>;
@@ -100,7 +97,7 @@ export function useZupass(): {
   login: () => Promise<void>;
   ticketData: PartialTicketData | undefined;
 } {
-  const [pcdStr] = usePassportPopupMessages();
+  const [pcdStr] = useZupassPopupMessages();
   const [ticketData, setTicketData] = useState<PartialTicketData | undefined>(
     undefined
   );
