@@ -86,10 +86,7 @@ export default withIronSessionApiRoute(
       // same PCD from being reused for another login.
       nullifiers.add(pcd.claim.nullifierHash);
 
-      // The user value is anonymous as the nullifier
-      // is the hash of the user's Semaphore identity and the
-      // external nullifier (i.e. nonce).
-      req.session.user = pcd.claim.nullifierHash;
+      req.session.user = pcd.claim.partialTicket.attendeeEmail as string;
 
       await req.session.save();
 

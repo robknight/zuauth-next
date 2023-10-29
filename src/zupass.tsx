@@ -7,9 +7,9 @@ import {
   ZKEdDSAEventTicketPCDPackage
 } from "@pcd/zk-eddsa-event-ticket-pcd";
 import { useEffect, useState } from "react";
+import { constructZupassPcdGetRequestUrl } from "./PassportInterface";
 import { openZupassPopup, useZupassPopupMessages } from "./PassportPopup";
 import { supportedEvents } from "./zupass-config";
-import { constructZupassPcdGetRequestUrl } from "./PassportInterface";
 
 const ZUPASS_URL = "https://zupass.org";
 
@@ -93,7 +93,7 @@ async function login() {
   );
 }
 
-export function useZupass(): {
+export function useZupass({ onAuth }: { onAuth: () => void }): {
   login: () => Promise<void>;
   ticketData: PartialTicketData | undefined;
 } {
@@ -118,6 +118,7 @@ export function useZupass(): {
 
         if (response.status === 200) {
           setTicketData(await response.json());
+          onAuth();
         }
       }
     })();
